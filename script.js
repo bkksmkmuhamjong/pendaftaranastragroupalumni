@@ -3,7 +3,7 @@ const C={
   API:'https://script.google.com/macros/s/AKfycbzU6-Zd3tSQzxu6MrHtZInu0ONiiJdLLN1merD2QpF5OVlvJr3bm_h6e5EId045XKeD/exec',
   NOMINAL:'Rp 30.000',
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
-  PENERIMA:'a.n. DWI FREDIAWAN',
+  PENERIMA:'a.n. DWI FREDIAWAN. Jika Eror TF Dana 085886712990 a.n Yoga Trisandria',
   // Isi pesan WhatsApp ke pendaftar. {nama} dan {id} otomatis terisi.
   WA_PESAN:'Halo {nama}, pendaftaran Anda (kode {id}) untuk seleksi PT Astra Grup (Otomotif) 2026 sudah kami terima dan biaya pendaftaran sudah masuk. Apabila ada revisi data dari petugas, mohon segera direspon agar proses pendaftaran tidak terhambat. Terima kasih. Panitia BKK SMK Muh Bojong'
 };
