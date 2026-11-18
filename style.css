@@ -28,3 +28,4 @@ th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white
 dialog{border:0;border-radius:10px;max-width:720px;width:94%;padding:20px}dialog::backdrop{background:#0008}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.bar input{max-width:260px;margin:0}
 [hidden]{display:none!important}
+input[readonly]{background:#eef0f3;color:var(--mut);cursor:not-allowed}
