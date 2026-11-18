@@ -1,9 +1,9 @@
 /* ===== PENGATURAN: ubah 4 baris ini ===== */
 const C={
-  API:'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT',
-  NOMINAL:'Rp 50.000',
+  API:'https://script.google.com/macros/s/AKfycbyoiaST5h0KQC3WgsuKcMJJa_MidzQUzyW8oUZK57GUlzSBZgmj2wkz2MfIcf1c6u3I/exec',
+  NOMINAL:'Rp 30.000',
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
-  PENERIMA:'a.n. NAMA PENERIMA DANA'
+  PENERIMA:'a.n. Dwi Frediawan'
 };
 /* ======================================== */
 const $=s=>document.querySelector(s);
