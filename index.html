@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pendaftaran Alumni – PT Astra Grup (Otomotif) 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <h1>Pendaftaran Alumni</h1>
+  <p class="sub">Seleksi PT Astra Grup (Otomotif) 2026</p>
+
+  <!-- 1. Masuk -->
+  <section id="v1" class="card">
+    <h2>Masuk sebagai alumni</h2>
+    <form id="f1" class="grid">
+      <label class="full">Nama alumni<input id="in_nama" required autocomplete="name"></label>
+      <label class="full">Tahun kelulusan<input id="in_thn" required inputmode="numeric" pattern="(19|20)[0-9]{2}" maxlength="4" placeholder="2025"></label>
+      <div class="full"><button>Lanjut ke formulir</button></div>
+    </form>
+  </section>
+
+  <!-- 2. Form -->
+  <section id="v2" class="card" hidden>
+    <h2>Formulir data pelamar</h2>
+    <div class="note">Semua data wajib diisi dan akan otomatis ditulis dengan huruf kapital (kecuali email). Pastikan NIK dan NPSN benar, data yang tidak sesuai tidak dapat kami terima.</div>
+    <form id="f2" class="grid"></form>
+  </section>
+
+  <!-- 3. Bayar -->
+  <section id="v3" class="card" hidden>
+    <h2>Pembayaran</h2>
+    <p class="c mut">Scan QR DANA di bawah ini</p>
+    <img id="qr" class="qr" alt="QR DANA">
+    <div class="big" id="nom"></div>
+    <p class="c mut" id="pen"></p>
+    <div class="note">Setelah transfer, screenshot bukti transfer lalu unggah di bawah. Pendaftaran terkirim otomatis setelah bukti diunggah.</div>
+    <label>Bukti transfer (gambar)<input type="file" id="bk" accept="image/*"></label>
+    <img id="pv" class="qr" alt="Pratinjau bukti transfer" hidden>
+    <div class="c"><button id="paid">Unggah bukti dan kirim pendaftaran</button></div>
+  </section>
+
+  <!-- 4. Selesai -->
+  <section id="v4" class="card c" hidden>
+    <h2>Pendaftaran terkirim</h2>
+    <p>Data Anda sudah masuk dengan kode <b id="kode2"></b>. Panitia akan memverifikasi bukti transfer Anda. Simpan kode ini.</p>
+  </section>
+</main>
+
+<!-- ADMIN -->
+<main id="adm" class="wide" hidden>
+  <h1>Dashboard admin</h1>
+  <form id="login" class="card bar"><input type="password" id="pw" placeholder="Password admin" required><button>Masuk</button></form>
+  <div id="dash" hidden>
+    <div class="stats" id="stats"></div>
+    <div class="card"><b>Per tahun lulus</b><div class="chips" id="rTh"></div><b>Per jurusan</b><div class="chips" id="rJr"></div></div>
+    <div class="card">
+      <div class="bar"><input id="q" placeholder="Cari nama, NIK, sekolah…"><button class="g" id="rf">Muat ulang</button><button class="g" id="rs" style="color:var(--red)">Reset semua data</button></div>
+      <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+    </div>
+  </div>
+</main>
+<dialog id="dlg"><h2>Edit data</h2><form id="fe" class="grid"></form></dialog>
+
+<script src="script.js"></script>
+</body>
+</html>
