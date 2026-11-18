@@ -1,6 +1,6 @@
 /* ===== PENGATURAN: ubah 4 baris ini ===== */
 const C={
-  API:'https://script.google.com/macros/s/AKfycbzU6-Zd3tSQzxu6MrHtZInu0ONiiJdLLN1merD2QpF5OVlvJr3bm_h6e5EId045XKeD/exec',
+  API:'https://script.google.com/macros/s/AKfycbz9W4MIHxOAodaYknwdmVP76B6xC0XzGb5lnE2Fgf6quSQFba1vOTx6Lu1CEYZO8CO8/exec',
   NOMINAL:'Rp 30.000',
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
   PENERIMA:'a.n. DWI FREDIAWAN. Jika Eror TF Dana 085886712990 a.n Yoga Trisandria',
@@ -77,7 +77,12 @@ function route(){const a=location.hash=='#admin';$('#adm').hidden=!a;$('#app').h
 addEventListener('hashchange',route);route();
 const chips=k=>{const m={};R.forEach(r=>{const v=r[k]||'-';m[v]=(m[v]||0)+1});
   return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([v,n])=>`<span>${esc(v)}: <b>${n}</b></span>`).join('')||'<span class="mut">Belum ada data</span>'};
-async function load(){const r=await api({a:'list',pw:PW});if(!r.ok){alert('Password salah');return false}R=r.rows;draw();return true}
+// Perubahan tampil langsung di layar, server disimpan di latar belakang (tanpa memuat ulang semua data)
+const sync=async b=>{try{const r=await api(Object.assign({pw:PW},b));if(!r.ok)throw 0}catch{alert('Perubahan gagal disimpan ke server. Data dimuat ulang.');load()}};
+async function load(){const b=$('#rf');b.disabled=true;b.textContent='Memuat…';
+  try{const r=await api({a:'list',pw:PW});if(!r.ok){alert('Password salah');return false}R=r.rows;draw();return true}
+  catch{alert('Gagal memuat data. Periksa koneksi.');return false}
+  finally{b.disabled=false;b.textContent='Muat ulang'}}
 function draw(){
   $('#stats').innerHTML=`<div class="card stat"><b>${R.length}</b>Total pelamar</div>`+ST.map(s=>`<div class="card stat"><b>${R.filter(r=>r.status==s).length}</b>${s}</div>`).join('');
   $('#rTh').innerHTML=chips('tahun_lulus');$('#rJr').innerHTML=chips('jurusan');
@@ -89,11 +94,11 @@ function draw(){
     ||`<tr><td colspan="${COLS.length+1}" class="mut">Belum ada pelamar.</td></tr>`}
 $('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;if(await load()){$('#login').hidden=true;$('#dash').hidden=false}};
 $('#q').oninput=draw;$('#rf').onclick=load;
-$('#rs').onclick=async()=>{if(prompt('Ketik RESET untuk menghapus SEMUA data pelamar. Tindakan ini tidak bisa dibatalkan.')=='RESET'){await api({a:'reset',pw:PW});load()}};
-$('#tb').onchange=async e=>{const id=e.target.dataset.st;if(id){await api({a:'update',pw:PW,id,data:{status:e.target.value}});load()}};
-$('#tb').onclick=async e=>{const t=e.target;
-  if(t.dataset.del){const r=R.find(x=>x.id==t.dataset.del);if(confirm('Hapus data '+r.nama+'?')){await api({a:'delete',pw:PW,id:r.id});load()}}
+$('#rs').onclick=()=>{if(prompt('Ketik RESET untuk menghapus SEMUA data pelamar. Tindakan ini tidak bisa dibatalkan.')=='RESET'){R=[];draw();sync({a:'reset'})}};
+$('#tb').onchange=e=>{const id=e.target.dataset.st;if(!id)return;R.find(x=>x.id==id).status=e.target.value;draw();sync({a:'update',id,data:{status:e.target.value}})};
+$('#tb').onclick=e=>{const t=e.target;
+  if(t.dataset.del){const r=R.find(x=>x.id==t.dataset.del);if(confirm('Hapus data '+r.nama+'?')){R=R.filter(x=>x.id!=r.id);draw();sync({a:'delete',id:r.id})}}
   if(t.dataset.ed){const r=R.find(x=>x.id==t.dataset.ed);$('#fe').dataset.id=r.id;
     $('#fe').innerHTML=FD.map(f=>field(f,r[f[0]])).join('')+'<div class="full bar"><button>Simpan perubahan</button><button type="button" class="g" id="cx">Batal</button></div>';
     $('#cx').onclick=()=>$('#dlg').close();$('#dlg').showModal()}};
-$('#fe').onsubmit=async e=>{e.preventDefault();await api({a:'update',pw:PW,id:e.target.dataset.id,data:collect(e.target)});$('#dlg').close();load()};
+$('#fe').onsubmit=e=>{e.preventDefault();const id=e.target.dataset.id,d=collect(e.target);Object.assign(R.find(x=>x.id==id),d);$('#dlg').close();draw();sync({a:'update',id,data:d})};
