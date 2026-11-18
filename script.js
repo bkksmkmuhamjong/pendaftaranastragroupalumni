@@ -1,6 +1,6 @@
 /* ===== PENGATURAN: ubah 4 baris ini ===== */
 const C={
-  API:'https://script.google.com/macros/s/AKfycbyoiaST5h0KQC3WgsuKcMJJa_MidzQUzyW8oUZK57GUlzSBZgmj2wkz2MfIcf1c6u3I/exec',
+  API:'https://script.google.com/macros/s/AKfycbzUHwxApMqJ7wu9cJp8j7PAI2f38STg4vAcw5-EDenGg-omAbXOwHk2LH-vEnVxKeVv/exec',
   NOMINAL:'Rp 30.000',
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
   PENERIMA:'a.n. Dwi Frediawan'
