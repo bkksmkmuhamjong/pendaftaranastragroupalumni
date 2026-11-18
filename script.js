@@ -1,9 +1,11 @@
 /* ===== PENGATURAN: ubah 4 baris ini ===== */
 const C={
-  API:'https://script.google.com/macros/s/AKfycby58V2dNpfAvtSZ8HJ460J_7eIGe71YWnLvLpsSKK0G0kuKXWkgJCFYV9wN-2A2DP2f/exec',
+  API:'https://script.google.com/macros/s/AKfycbzU6-Zd3tSQzxu6MrHtZInu0ONiiJdLLN1merD2QpF5OVlvJr3bm_h6e5EId045XKeD/exec',
   NOMINAL:'Rp 30.000',
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
-  PENERIMA:'a.n. Dwi Frediawan'
+  PENERIMA:'a.n. DWI FREDIAWAN',
+  // Isi pesan WhatsApp ke pendaftar. {nama} dan {id} otomatis terisi.
+  WA_PESAN:'Halo {nama}, pendaftaran Anda (kode {id}) untuk seleksi PT Astra Grup (Otomotif) 2026 sudah kami terima dan biaya pendaftaran sudah masuk. Apabila ada revisi data dari petugas, mohon segera direspon agar proses pendaftaran tidak terhambat. Terima kasih. Panitia BKK SMK Muh Bojong'
 };
 /* ======================================== */
 const $=s=>document.querySelector(s);
@@ -66,6 +68,10 @@ $('#paid').onclick=async()=>{const f=$('#bk').files[0];if(!f)return alert('Pilih
 /* ===== Admin (buka dengan #admin) ===== */
 let PW='',R=[];
 const COLS=[['id','Kode'],['status','Status'],['bukti','Bukti'],['nama','Nama'],['nik','NIK'],['jk','JK'],['tgl_lahir','Tgl lahir'],['jurusan','Jurusan'],['tahun_lulus','Lulus'],['nama_sekolah','Sekolah'],['hp','HP']];
+function waLink(r){let n=String(r.hp).replace(/\D/g,'');
+  if(n.startsWith('0'))n='62'+n.slice(1);else if(n.startsWith('8'))n='62'+n;
+  const t=C.WA_PESAN.replace('{nama}',r.nama).replace('{id}',r.id);
+  return'https://wa.me/'+n+'?text='+encodeURIComponent(t)}
 const ST=['MENUNGGU VERIFIKASI','LUNAS','DITOLAK'];
 function route(){const a=location.hash=='#admin';$('#adm').hidden=!a;$('#app').hidden=a}
 addEventListener('hashchange',route);route();
@@ -79,7 +85,7 @@ function draw(){
   const q=$('#q').value.toLowerCase();
   $('#tb').innerHTML=R.filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q)).map(r=>'<tr>'+COLS.map(([k])=>
     k=='bukti'?`<td>${r.bukti?`<a href="${esc(r.bukti)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td>`:k=='status'?`<td><select data-st="${r.id}">${ST.map(s=>`<option${s==r.status?' selected':''}>${s}</option>`).join('')}</select></td>`:`<td>${esc(r[k])}</td>`).join('')
-    +`<td><button class="s g" data-ed="${r.id}">Edit</button> <button class="s" data-del="${r.id}">Hapus</button></td></tr>`).join('')
+    +`<td>${r.status=='LUNAS'?`<a class="wa" href="${waLink(r)}" target="_blank" rel="noopener">WA</a>`:'<span class="wa off" title="Ubah status ke LUNAS dulu">WA</span>'} <button class="s g" data-ed="${r.id}">Edit</button> <button class="s" data-del="${r.id}">Hapus</button></td></tr>`).join('')
     ||`<tr><td colspan="${COLS.length+1}" class="mut">Belum ada pelamar.</td></tr>`}
 $('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;if(await load()){$('#login').hidden=true;$('#dash').hidden=false}};
 $('#q').oninput=draw;$('#rf').onclick=load;
