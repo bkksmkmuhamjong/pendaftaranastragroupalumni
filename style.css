@@ -30,3 +30,4 @@ dialog{border:0;border-radius:10px;max-width:720px;width:94%;padding:20px}dialog
 [hidden]{display:none!important}
 input[readonly]{background:#eef0f3;color:var(--mut);cursor:not-allowed}
 .wa{display:inline-block;background:#16a34a;color:#fff;border-radius:6px;padding:5px 10px;font-size:13px;font-weight:600;text-decoration:none}.wa.off{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+.rv{display:grid;grid-template-columns:minmax(120px,170px) 1fr;gap:8px 14px;font-size:14px}.rv b{color:var(--mut);font-weight:600}.rv span{word-break:break-word}
