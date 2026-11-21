@@ -49,20 +49,35 @@ function collect(form){
 const show=id=>['v1','v2','v3','v4'].forEach(v=>$('#'+v).hidden=v!=id);
 
 /* ===== Alur pendaftar ===== */
-let ID='';
-$('#f1').onsubmit=e=>{e.preventDefault();
-  $('#f2').innerHTML=FD.filter(f=>f[0]!='source').map(f=>field(f,f[0]=='nama'?$('#in_nama').value.toUpperCase():f[0]=='tahun_lulus'?$('#in_thn').value:f[0]=='npsn'?DEF.npsn:'',f[0]=='npsn')).join('')
-    +'<div class="full"><button id="sb">Lanjut ke pembayaran</button></div>';
-  show('v2');scrollTo(0,0)};
+// Draf isian disimpan di browser (7 hari) supaya tidak hilang saat pindah ke aplikasi pembayaran
+const DK='draft_pendaftaran_alumni',TTL=7*864e5;
+const dget=()=>{try{const d=JSON.parse(localStorage.getItem(DK));return d&&Date.now()-d.t<TTL?d:null}catch{return null}};
+const dset=o=>{try{localStorage.setItem(DK,JSON.stringify(Object.assign(dget()||{},o,{t:Date.now()})))}catch{}};
+const dclear=()=>{try{localStorage.removeItem(DK)}catch{}};
+const vals=()=>{const o={};new FormData($('#f2')).forEach((v,k)=>o[k]=v);return o};
+function buildForm(v,restored){
+  $('#f2').innerHTML=(restored?'<div class="note full">Isian Anda sebelumnya sudah dipulihkan. Silakan lanjutkan.</div>':'')
+    +FD.filter(f=>f[0]!='source').map(f=>field(f,f[0]=='npsn'?DEF.npsn:(v[f[0]]??''),f[0]=='npsn')).join('')
+    +'<div class="full bar"><button id="sb">Lanjut ke pembayaran</button><button type="button" class="g" id="rst">Mulai dari awal</button></div>';
+  $('#rst').onclick=()=>{if(confirm('Hapus semua isian dan mulai dari awal?')){dclear();location.reload()}}}
+function showPay(){$('#qr').src=C.QR;$('#nom').textContent=C.NOMINAL;$('#pen').textContent=C.PENERIMA;show('v3');scrollTo(0,0)}
 let DATA=null;
+$('#f1').onsubmit=e=>{e.preventDefault();
+  const v={nama:$('#in_nama').value.toUpperCase(),tahun_lulus:$('#in_thn').value};
+  buildForm(v);dset({step:'v2',vals:v});show('v2');scrollTo(0,0)};
+$('#f2').addEventListener('input',()=>dset({step:'v2',vals:vals()}));
 $('#f2').onsubmit=e=>{e.preventDefault();DATA=Object.assign(collect(e.target),DEF);
-  $('#qr').src=C.QR;$('#nom').textContent=C.NOMINAL;$('#pen').textContent=C.PENERIMA;show('v3');scrollTo(0,0)};
+  dset({step:'v3',vals:vals(),data:DATA});showPay()};
+$('#back').onclick=()=>{dset({step:'v2'});show('v2');scrollTo(0,0)};
+(()=>{const d=dget();if(!d||!d.vals)return;
+  buildForm(d.vals,true);$('#in_nama').value=d.vals.nama||'';$('#in_thn').value=d.vals.tahun_lulus||'';
+  if(d.step=='v3'&&d.data){DATA=d.data;showPay()}else if(d.step=='v2')show('v2')})();
 const shrink=f=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1100/Math.max(i.width,i.height)),c=document.createElement('canvas');
   c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.7))};i.onerror=no;i.src=URL.createObjectURL(f)});
 $('#bk').onchange=e=>{const f=e.target.files[0];if(f){$('#pv').src=URL.createObjectURL(f);$('#pv').hidden=false}};
 $('#paid').onclick=async()=>{const f=$('#bk').files[0];if(!f)return alert('Pilih screenshot bukti transfer dulu.');
   const b=$('#paid');b.disabled=true;b.textContent='Mengirim…';
-  try{const r=await api({a:'submit',data:DATA,bukti:await shrink(f)});if(!r.ok)throw 0;$('#kode2').textContent=r.id;show('v4');scrollTo(0,0)}
+  try{const r=await api({a:'submit',data:DATA,bukti:await shrink(f)});if(!r.ok)throw 0;dclear();$('#kode2').textContent=r.id;show('v4');scrollTo(0,0)}
   catch{alert('Gagal mengirim. Periksa koneksi lalu coba lagi.');b.disabled=false;b.textContent='Unggah bukti dan kirim pendaftaran'}};
 
 /* ===== Admin (buka dengan #admin) ===== */
