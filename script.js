@@ -1,6 +1,6 @@
 /* ===== PENGATURAN: ubah 4 baris ini ===== */
 const C={
-  API:'https://script.google.com/macros/s/AKfycbzFcU0KyiblbFd1oYCY_5VjtZLng6jTEiw3RhkgZOMUJ_B7blvXk99q2twxMtEL_g6u/exec',
+  API:'https://script.google.com/macros/s/AKfycbxS6yy0pUyFtOSZOwPqlRTXlJmLsp0E1FJob719BTqkp_IBg3D-4X9-dH-vW_Ip_2aR/exec',
   NOMINAL:'Rp 30.000',
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
   PENERIMA:'a.n. DWI FREDIAWAN. Jika Eror TF Dana 085886712990 a.n Yoga Trisandria',
