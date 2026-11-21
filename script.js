@@ -5,6 +5,8 @@ const C={
   QR:'dana-qr.png',            // taruh gambar QR DANA Anda di repo dengan nama ini
   PENERIMA:'a.n. DWI FREDIAWAN. Jika Eror TF Dana 085886712990 a.n Yoga Trisandria',
   // Isi pesan WhatsApp ke pendaftar. {nama} dan {id} otomatis terisi.
+  // Pesan WhatsApp untuk meminta pendaftar mengecek data. {nama}, {id}, {link} otomatis terisi.
+  CEK_PESAN:'Halo {nama}, mohon periksa kembali data pendaftaran Anda (kode {id}) untuk seleksi PT Astra Grup (Otomotif) 2026 melalui link berikut:\n{link}\n\nJika data sudah benar, tekan "Data sudah sesuai". Jika ada yang salah, tekan "Ada yang perlu diperbaiki" lalu ubah datanya. Terima kasih. Panitia BKK SMK Muh Bojong',
   WA_PESAN:'Halo {nama}, pendaftaran Anda (kode {id}) untuk seleksi PT Astra Grup (Otomotif) 2026 sudah kami terima dan biaya pendaftaran sudah masuk. Apabila ada revisi data dari petugas, mohon segera direspon agar proses pendaftaran tidak terhambat. Terima kasih. Panitia BKK SMK Muh Bojong'
 };
 /* ======================================== */
@@ -82,15 +84,16 @@ $('#paid').onclick=async()=>{const f=$('#bk').files[0];if(!f)return alert('Pilih
 
 /* ===== Admin (buka dengan #admin) ===== */
 let PW='',R=[];
-const COLS=[['id','Kode'],['status','Status'],['bukti','Bukti'],['nama','Nama'],['nik','NIK'],['jk','JK'],['tgl_lahir','Tgl lahir'],['jurusan','Jurusan'],['tahun_lulus','Lulus'],['nama_sekolah','Sekolah'],['hp','HP']];
-function waLink(r){let n=String(r.hp).replace(/\D/g,'');
+const COLS=[['id','Kode'],['status','Status'],['cek','Cek data'],['bukti','Bukti'],['nama','Nama'],['nik','NIK'],['jk','JK'],['tgl_lahir','Tgl lahir'],['jurusan','Jurusan'],['tahun_lulus','Lulus'],['nama_sekolah','Sekolah'],['hp','HP']];
+function waUrl(hp,t){let n=String(hp).replace(/\D/g,'');
   if(n.startsWith('0'))n='62'+n.slice(1);else if(n.startsWith('8'))n='62'+n;
-  const t=C.WA_PESAN.replace('{nama}',r.nama).replace('{id}',r.id);
   return'https://wa.me/'+n+'?text='+encodeURIComponent(t)}
+const waLink=r=>waUrl(r.hp,C.WA_PESAN.replace('{nama}',r.nama).replace('{id}',r.id));
 const ST=['MENUNGGU VERIFIKASI','LUNAS','DITOLAK'];
-function route(){const a=location.hash=='#admin';$('#adm').hidden=!a;$('#app').hidden=a}
+function route(){const a=location.hash=='#admin',c=new URLSearchParams(location.search).has('cek');
+  $('#adm').hidden=!a||c;$('#app').hidden=a||c;$('#vc').hidden=!c}
 addEventListener('hashchange',route);route();
-const chips=k=>{const m={};R.forEach(r=>{const v=r[k]||'-';m[v]=(m[v]||0)+1});
+const chips=(k,fb='-')=>{const m={};R.forEach(r=>{const v=r[k]||fb;m[v]=(m[v]||0)+1});
   return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([v,n])=>`<span>${esc(v)}: <b>${n}</b></span>`).join('')||'<span class="mut">Belum ada data</span>'};
 // Perubahan tampil langsung di layar, server disimpan di latar belakang (tanpa memuat ulang semua data)
 const sync=async b=>{try{const r=await api(Object.assign({pw:PW},b));if(!r.ok)throw 0}catch{alert('Perubahan gagal disimpan ke server. Data dimuat ulang.');load()}};
@@ -100,20 +103,58 @@ async function load(){const b=$('#rf');b.disabled=true;b.textContent='Memuat…'
   finally{b.disabled=false;b.textContent='Muat ulang'}}
 function draw(){
   $('#stats').innerHTML=`<div class="card stat"><b>${R.length}</b>Total pelamar</div>`+ST.map(s=>`<div class="card stat"><b>${R.filter(r=>r.status==s).length}</b>${s}</div>`).join('');
-  $('#rTh').innerHTML=chips('tahun_lulus');$('#rJr').innerHTML=chips('jurusan');
+  $('#rTh').innerHTML=chips('tahun_lulus');$('#rJr').innerHTML=chips('jurusan');$('#rCk').innerHTML=chips('cek','BELUM DIKIRIM');
   $('#th').innerHTML='<tr>'+COLS.map(c=>`<th>${c[1]}</th>`).join('')+'<th>Aksi</th></tr>';
   const q=$('#q').value.toLowerCase();
   $('#tb').innerHTML=R.filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q)).map(r=>'<tr>'+COLS.map(([k])=>
-    k=='bukti'?`<td>${r.bukti?`<a href="${esc(r.bukti)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td>`:k=='status'?`<td><select data-st="${r.id}">${ST.map(s=>`<option${s==r.status?' selected':''}>${s}</option>`).join('')}</select></td>`:`<td>${esc(r[k])}</td>`).join('')
-    +`<td>${r.status=='LUNAS'?`<a class="wa" href="${waLink(r)}" target="_blank" rel="noopener">WA</a>`:'<span class="wa off" title="Ubah status ke LUNAS dulu">WA</span>'} <button class="s g" data-ed="${r.id}">Edit</button> <button class="s" data-del="${r.id}">Hapus</button></td></tr>`).join('')
+    k=='cek'?`<td>${esc(r.cek||'-')}</td>`:k=='bukti'?`<td>${r.bukti?`<a href="${esc(r.bukti)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td>`:k=='status'?`<td><select data-st="${r.id}">${ST.map(s=>`<option${s==r.status?' selected':''}>${s}</option>`).join('')}</select></td>`:`<td>${esc(r[k])}</td>`).join('')
+    +`<td>${r.status=='LUNAS'?`<a class="wa" href="${waLink(r)}" target="_blank" rel="noopener">WA</a>`:'<span class="wa off" title="Ubah status ke LUNAS dulu">WA</span>'} <button class="s g" data-cek="${r.id}">Cek data</button> <button class="s g" data-ed="${r.id}">Edit</button> <button class="s" data-del="${r.id}">Hapus</button></td></tr>`).join('')
     ||`<tr><td colspan="${COLS.length+1}" class="mut">Belum ada pelamar.</td></tr>`}
 $('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;if(await load()){$('#login').hidden=true;$('#dash').hidden=false}};
 $('#q').oninput=draw;$('#rf').onclick=load;
 $('#rs').onclick=()=>{if(prompt('Ketik RESET untuk menghapus SEMUA data pelamar. Tindakan ini tidak bisa dibatalkan.')=='RESET'){R=[];draw();sync({a:'reset'})}};
 $('#tb').onchange=e=>{const id=e.target.dataset.st;if(!id)return;R.find(x=>x.id==id).status=e.target.value;draw();sync({a:'update',id,data:{status:e.target.value}})};
 $('#tb').onclick=e=>{const t=e.target;
+  if(t.dataset.cek)kirimCek(t.dataset.cek);
   if(t.dataset.del){const r=R.find(x=>x.id==t.dataset.del);if(confirm('Hapus data '+r.nama+'?')){R=R.filter(x=>x.id!=r.id);draw();sync({a:'delete',id:r.id})}}
   if(t.dataset.ed){const r=R.find(x=>x.id==t.dataset.ed);$('#fe').dataset.id=r.id;
     $('#fe').innerHTML=FD.map(f=>field(f,r[f[0]])).join('')+'<div class="full bar"><button>Simpan perubahan</button><button type="button" class="g" id="cx">Batal</button></div>';
     $('#cx').onclick=()=>$('#dlg').close();$('#dlg').showModal()}};
 $('#fe').onsubmit=e=>{e.preventDefault();const id=e.target.dataset.id,d=collect(e.target);Object.assign(R.find(x=>x.id==id),d);$('#dlg').close();draw();sync({a:'update',id,data:d})};
+
+/* ===== Admin: kirim link cek data ke pendaftar lewat WhatsApp ===== */
+async function kirimCek(id){const r=R.find(x=>x.id==id);if(!r.hp)return alert('No. HP pendaftar kosong.');
+  const w=window.open('','_blank'); // dibuka dulu agar tidak diblokir browser
+  try{const x=await api({a:'sendcek',pw:PW,id});if(!x.ok)throw 0;
+    r.token=x.token;r.cek='MENUNGGU KONFIRMASI';draw();
+    const link=location.origin+location.pathname+'?cek='+id+'&t='+x.token;
+    const msg=C.CEK_PESAN.replace('{nama}',r.nama).replace('{id}',id).replace('{link}',link);
+    if(w)w.location=waUrl(r.hp,msg);else location.href=waUrl(r.hp,msg)}
+  catch{if(w)w.close();alert('Gagal menyiapkan link cek data. Coba lagi.')}}
+
+/* ===== Pendaftar: cek data lewat link ?cek=KODE&t=TOKEN ===== */
+const Q=new URLSearchParams(location.search);
+if(Q.get('cek'))cekInit(Q.get('cek'),Q.get('t')||'');
+async function cekInit(id,t){
+  const msg=(h,p)=>{$('#cbody').innerHTML=`<div class="card c"><h2>${h}</h2><p>${p}</p></div>`};
+  const F2=FD.filter(f=>f[0]!='source');let D;
+  try{const r=await api({a:'getcek',id,t});if(!r.ok)throw 0;D=r.data}
+  catch{return msg('Link tidak valid','Link cek data tidak ditemukan atau sudah tidak berlaku. Silakan hubungi panitia.')}
+  if(D.cek=='SESUAI')return msg('Terima kasih','Anda sudah mengonfirmasi bahwa data sudah sesuai.');
+  const view=()=>{
+    $('#cbody').innerHTML=`<div class="card"><h2>Periksa data Anda</h2><p class="mut">Kode pendaftaran: <b>${esc(id)}</b>. Pastikan semua data di bawah ini sudah benar.</p>
+      <div class="rv">${F2.map(f=>`<b>${f[1]}</b><span>${esc(D[f[0]]||'-')}</span>`).join('')}</div></div>
+      <div class="bar" style="justify-content:center"><button id="ok">Data sudah sesuai</button><button class="g" id="no">Ada yang perlu diperbaiki</button></div>`;
+    $('#ok').onclick=async()=>{if(!confirm('Konfirmasi bahwa semua data sudah sesuai?'))return;
+      try{const r=await api({a:'konfirm',id,t});if(!r.ok)throw 0;msg('Terima kasih','Data Anda sudah dikonfirmasi sesuai. Proses cek data selesai.')}
+      catch{alert('Gagal mengirim konfirmasi. Coba lagi.')}};
+    $('#no').onclick=edit;scrollTo(0,0)};
+  const edit=()=>{
+    $('#cbody').innerHTML=`<div class="card"><h2>Perbaiki data</h2><div class="note">Ubah data yang belum sesuai, lalu tekan Simpan perbaikan.</div>
+      <form id="fc" class="grid">${F2.map(f=>field(f,D[f[0]]||'',f[0]=='npsn')).join('')}
+      <div class="full bar"><button>Simpan perbaikan</button><button type="button" class="g" id="bc">Batal</button></div></form></div>`;
+    $('#bc').onclick=view;scrollTo(0,0);
+    $('#fc').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;
+      try{const r=await api({a:'revisi',id,t,data:collect(e.target)});if(!r.ok)throw 0;msg('Perbaikan terkirim','Terima kasih. Data Anda sudah diperbarui dan akan diperiksa kembali oleh panitia.')}
+      catch{alert('Gagal menyimpan perbaikan. Coba lagi.');b.disabled=false}}};
+  view()}
