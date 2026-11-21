@@ -107,7 +107,7 @@ function draw(){
   $('#th').innerHTML='<tr>'+COLS.map(c=>`<th>${c[1]}</th>`).join('')+'<th>Aksi</th></tr>';
   const q=$('#q').value.toLowerCase();
   $('#tb').innerHTML=R.filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q)).map(r=>'<tr>'+COLS.map(([k])=>
-    k=='cek'?`<td>${esc(r.cek||'-')}</td>`:k=='bukti'?`<td>${r.bukti?`<a href="${esc(r.bukti)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td>`:k=='status'?`<td><select data-st="${r.id}">${ST.map(s=>`<option${s==r.status?' selected':''}>${s}</option>`).join('')}</select></td>`:`<td>${esc(r[k])}</td>`).join('')
+    k=='cek'?`<td>${esc(r.cek||'-')}</td>`:k=='bukti'?`<td>${r.bukti?`<a href="${esc(r.bukti)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td>`:k=='status'?`<td><select data-st="${r.id}">${(ST.includes(r.status)?ST:[r.status].concat(ST)).map(s=>`<option${s==r.status?' selected':''}>${s}</option>`).join('')}</select></td>`:`<td>${esc(r[k])}</td>`).join('')
     +`<td>${r.status=='LUNAS'?`<a class="wa" href="${waLink(r)}" target="_blank" rel="noopener">WA</a>`:'<span class="wa off" title="Ubah status ke LUNAS dulu">WA</span>'} <button class="s g" data-cek="${r.id}">Cek data</button> <button class="s g" data-ed="${r.id}">Edit</button> <button class="s" data-del="${r.id}">Hapus</button></td></tr>`).join('')
     ||`<tr><td colspan="${COLS.length+1}" class="mut">Belum ada pelamar.</td></tr>`}
 $('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;if(await load()){$('#login').hidden=true;$('#dash').hidden=false}};
